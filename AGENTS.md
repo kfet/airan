@@ -1,0 +1,57 @@
+# AGENTS.md
+
+Guidance for AI agents working on `airun`.
+
+## Scope
+
+`airun` is the `env` for AI coding agents: a **small, focused** shebang
+dispatcher. It reads an agent file, resolves a backend, and execs the
+matching agent CLI with the whole file as the prompt. Building blocks:
+
+- `Resolve` / `Spec` — read the file, pick the backend, build the
+  concrete invocation (`airun.go`).
+- `Run` / `ExecFunc` — the program entry point; validates args, resolves,
+  execs via an injected exec function (`airun.go`).
+- `registry` — the in-code table of backend adapters (`airun.go`).
+- `frontmatterBackend` / `parseBackendLine` — frontmatter parsing
+  (`airun.go`).
+- `cmd/airun/main.go` — the entry-point shim wiring `Run` to the real
+  `syscall.Exec`.
+
+`doc.go` is the source of truth for the public API surface; keep it, this
+list, and `docs/DESIGN.md` in sync.
+
+**Do not** add flags, parameters, args passthrough, stdin piping,
+`--dry-run`, config files, or new frontmatter keys without an explicit
+decision. v0 is deliberately **no-params**: the interface is the file
+plus `AIRUN_BACKEND`. See `docs/DESIGN.md` § "Out of scope for v0".
+
+## Constraints
+
+- **Stdlib only.** No third-party runtime deps. Ever. If you reach for
+  one, stop and ask first. (`covgate` is a build-time tool, not a dep.)
+- **Go 1.21+.** Don't use newer language features without a real need;
+  bumping the minimum cuts users.
+- **No global mutable state.** The `registry` is the one package-level
+  table and is treated as read-only.
+- **The whole file is the prompt.** Never strip the shebang or
+  frontmatter before handing the content to a backend.
+- **Exec is injected.** Keep the real `syscall.Exec` in
+  `cmd/airun/main.go` so the library stays 100% testable; `Run` takes an
+  `ExecFunc`.
+
+## Workflow
+
+- `make all` runs gofmt + go vet + staticcheck (if installed) + race
+  tests with a **100% coverage gate** (excluding paths in `.covignore`)
+  + build. Must pass before any commit.
+- Add a `## [Unreleased]` entry in `CHANGELOG.md` for any user-visible
+  change.
+- Update `doc.go`, `README.md`, `docs/DESIGN.md`, and `AGENTS.md` when
+  the public API or behaviour changes.
+
+## Coverage exemptions
+
+`cmd/airun/main.go` is excluded from the coverage gate via `.covignore` —
+it is the entry-point shim whose only real logic is the `syscall.Exec`
+process replacement, which can't run under the test process.

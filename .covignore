@@ -1,0 +1,11 @@
+# Coverage exclusions — regex patterns matched against lines of the
+# raw `go test -coverprofile` output, applied before the 100% gate
+# by covgate (https://github.com/kfet/covgate).
+#
+# Convention: file-level patterns only. No line numbers, no
+# per-function regexes — both rot on any nearby edit.
+
+# Entry-point shim: cmd/airun/main.go is glue around the library. Its
+# only real logic is the syscall.Exec replacement, which can't run
+# under the test process without replacing it.
+^github.com/kfet/airun/cmd/[^/]+/main\.go:
