@@ -28,16 +28,29 @@ zero other edits.
 
 `airan FILE` reads the file, resolves a backend, and **execs** the
 matching agent CLI with the **whole file** (frontmatter included) as the
-prompt. That's it — no flags, no parameters. The frontmatter is read for
-routing but never stripped, so the agent sees its own constraints.
+prompt. The frontmatter is read for routing but never stripped, so the
+agent sees its own constraints.
 
 Backend resolution, in precedence order:
 
 1. The frontmatter `backend:` key (wins).
 2. The `AIRAN_BACKEND` environment variable.
+3. The configured default backend (`airan config NAME`).
 
 Built-in backends: `claude` (`claude -p`), `fir` (`fir -p`), `aider`
 (`aider --message`).
+
+## Commands
+
+```sh
+airan FILE          # dispatch the agent file (the primary use)
+airan backends      # list built-in backends, marking the default
+airan config        # show config path + current default backend
+airan config NAME   # set NAME as the default backend
+```
+
+Config lives in one XDG-standard file —
+`$XDG_CONFIG_HOME/airan/config`, else `~/.config/airan/config`.
 
 See [docs/DESIGN.md](docs/DESIGN.md) for the full design and rationale.
 

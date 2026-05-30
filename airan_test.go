@@ -2,6 +2,7 @@ package airan
 
 import (
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -20,6 +21,11 @@ func writeTemp(t *testing.T, content string) string {
 
 // noEnv is a getenv that always returns "".
 func noEnv(string) string { return "" }
+
+// envFrom builds a getenv backed by a map.
+func envFrom(m map[string]string) func(string) string {
+	return func(k string) string { return m[k] }
+}
 
 func TestResolve_FrontmatterBackend(t *testing.T) {
 	content := "#!/usr/bin/env airan\n---\nbackend: claude\n---\nDo the thing.\n"
@@ -112,7 +118,7 @@ func TestRun_Success(t *testing.T) {
 	}
 
 	env := []string{"FOO=bar"}
-	if err := Run([]string{path}, noEnv, env, exec); err != nil {
+	if err := Run([]string{path}, noEnv, env, io.Discard, exec); err != nil {
 		t.Fatalf("Run: %v", err)
 	}
 	if gotCmd != "claude" {
@@ -132,7 +138,7 @@ func TestRun_UsageError(t *testing.T) {
 		return nil
 	}
 	for _, args := range [][]string{{}, {"a", "b"}} {
-		if err := Run(args, noEnv, nil, exec); !errors.Is(err, ErrUsage) {
+		if err := Run(args, noEnv, nil, io.Discard, exec); !errors.Is(err, ErrUsage) {
 			t.Errorf("Run(%v) err = %v, want ErrUsage", args, err)
 		}
 	}
@@ -144,7 +150,7 @@ func TestRun_ResolveErrorPropagates(t *testing.T) {
 		return nil
 	}
 	path := writeTemp(t, "no backend\n")
-	if err := Run([]string{path}, noEnv, nil, exec); !errors.Is(err, ErrNoBackend) {
+	if err := Run([]string{path}, noEnv, nil, io.Discard, exec); !errors.Is(err, ErrNoBackend) {
 		t.Errorf("err = %v, want ErrNoBackend", err)
 	}
 }
@@ -153,7 +159,7 @@ func TestRun_ExecErrorPropagates(t *testing.T) {
 	want := errors.New("boom")
 	exec := func(string, []string, []string) error { return want }
 	path := writeTemp(t, "---\nbackend: fir\n---\n")
-	if err := Run([]string{path}, noEnv, nil, exec); !errors.Is(err, want) {
+	if err := Run([]string{path}, noEnv, nil, io.Discard, exec); !errors.Is(err, want) {
 		t.Errorf("err = %v, want %v", err, want)
 	}
 }

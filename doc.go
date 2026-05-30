@@ -16,13 +16,15 @@
 // frontmatter — the whole file (shebang included) is handed to the
 // backend as the prompt, so the agent sees its own constraints.
 //
-// # No parameters
+// # No flags
 //
-// airan takes exactly one argument — the agent file — and no flags.
-// All configuration lives in the file's frontmatter or the
-// environment. The public surface is:
+// airan takes no flags. Beyond dispatching an agent file it exposes two
+// reserved subcommands:
 //
-//	airan FILE
+//	airan FILE          dispatch the agent file (the primary use)
+//	airan backends      list the built-in backends
+//	airan config        show the config path and default backend
+//	airan config NAME   set NAME as the default backend
 //
 // # Backend resolution
 //
@@ -30,6 +32,8 @@
 //
 //  1. The frontmatter "backend:" key (explicit, per-file — wins).
 //  2. The AIRAN_BACKEND environment variable (whole-repo override).
+//  3. The default backend in the XDG config file
+//     ($XDG_CONFIG_HOME/airan/config, else $HOME/.config/airan/config).
 //
 // The resolved backend name is looked up in a built-in registry of
 // adapters (claude, fir, aider, …); the adapter maps the canonical

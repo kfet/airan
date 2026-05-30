@@ -10,21 +10,26 @@ matching agent CLI with the whole file as the prompt. Building blocks:
 
 - `Resolve` / `Spec` — read the file, pick the backend, build the
   concrete invocation (`airan.go`).
-- `Run` / `ExecFunc` — the program entry point; validates args, resolves,
-  execs via an injected exec function (`airan.go`).
+- `Run` / `ExecFunc` — the program entry point; dispatches subcommands
+  or an agent file, execs via an injected exec function (`airan.go`).
 - `registry` — the in-code table of backend adapters (`airan.go`).
 - `frontmatterBackend` / `parseBackendLine` — frontmatter parsing
   (`airan.go`).
+- `configPath` / `loadDefault` / `saveDefault` — XDG config file
+  handling (`config.go`).
+- `cmdBackends` / `cmdConfig` — the `backends` and `config` subcommands
+  (`commands.go`).
 - `cmd/airan/main.go` — the entry-point shim wiring `Run` to the real
   `syscall.Exec`.
 
 `doc.go` is the source of truth for the public API surface; keep it, this
 list, and `docs/DESIGN.md` in sync.
 
-**Do not** add flags, parameters, args passthrough, stdin piping,
-`--dry-run`, config files, or new frontmatter keys without an explicit
-decision. v0 is deliberately **no-params**: the interface is the file
-plus `AIRAN_BACKEND`. See `docs/DESIGN.md` § "Out of scope for v0".
+**Do not** add option flags (`--foo`), args passthrough, stdin piping,
+`--dry-run`, or new frontmatter keys without an explicit decision. The
+surface is one positional file argument plus the `backends`/`config`
+verbs; configuration is the XDG config file and `AIRAN_BACKEND`. See
+`docs/DESIGN.md` § "Out of scope for v0".
 
 ## Constraints
 

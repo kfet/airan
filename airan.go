@@ -3,6 +3,7 @@ package airan
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -18,13 +19,14 @@ const promptToken = "{{prompt}}"
 
 // Sentinel errors. Callers may test for these with errors.Is.
 var (
-	// ErrUsage is returned when airan is invoked with anything other
-	// than exactly one argument (the agent file).
-	ErrUsage = errors.New("airan: usage: airan FILE")
+	// ErrUsage is returned when airan is invoked with an argument list
+	// it does not understand.
+	ErrUsage = errors.New("airan: usage: airan FILE | airan backends | airan config [BACKEND]")
 
 	// ErrNoBackend is returned when no backend can be resolved from the
-	// file's frontmatter or the AIRAN_BACKEND environment variable.
-	ErrNoBackend = errors.New("airan: no backend: set 'backend:' in the file's frontmatter or $" + envBackend)
+	// file's frontmatter, the AIRAN_BACKEND environment variable, or the
+	// configured default backend.
+	ErrNoBackend = errors.New("airan: no backend: set 'backend:' in the file's frontmatter, $" + envBackend + ", or run 'airan config NAME'")
 )
 
 // adapter maps the canonical airan contract onto a concrete CLI. args
@@ -72,6 +74,13 @@ func Resolve(path string, getenv func(string) string) (Spec, error) {
 		backend = getenv(envBackend)
 	}
 	if backend == "" {
+		def, err := loadDefault(getenv)
+		if err != nil {
+			return Spec{}, err
+		}
+		backend = def
+	}
+	if backend == "" {
 		return Spec{}, ErrNoBackend
 	}
 
@@ -92,9 +101,26 @@ func Resolve(path string, getenv func(string) string) (Spec, error) {
 }
 
 // Run is the program entry point. args is the argument list after the
-// program name (i.e. os.Args[1:]); it must contain exactly the agent
-// file path. On success Run does not return — exec replaces the process.
-func Run(args []string, getenv func(string) string, environ []string, exec ExecFunc) error {
+// program name (i.e. os.Args[1:]). The first argument selects behaviour:
+//
+//	airan FILE          dispatch the agent file (the primary use)
+//	airan backends      list the built-in backends
+//	airan config        show the config path and default backend
+//	airan config NAME   set NAME as the default backend
+//
+// "backends" and "config" are reserved words; an agent file dispatched
+// via shebang always arrives as a path (with a separator), so it can
+// never collide with them. On a successful dispatch Run does not return
+// — exec replaces the process.
+func Run(args []string, getenv func(string) string, environ []string, out io.Writer, exec ExecFunc) error {
+	if len(args) >= 1 {
+		switch args[0] {
+		case "backends":
+			return cmdBackends(args[1:], getenv, out)
+		case "config":
+			return cmdConfig(args[1:], getenv, out)
+		}
+	}
 	if len(args) != 1 {
 		return ErrUsage
 	}

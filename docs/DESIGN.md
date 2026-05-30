@@ -25,11 +25,11 @@ left; pluggable adapters on the right.
 
 ## Design principles
 
-1. **No parameters at the start.** `airan` takes exactly one argument —
-   the agent file — and **no flags**. The entire interface is the file
-   plus the environment. No `--dry-run`, no `--model`, no passthrough
-   args in v0. Every knob is a future extension that must justify
-   itself; the floor is dead simple.
+1. **No flags.** `airan` has no option flags. Its surface is one
+   positional argument — the agent file — plus two reserved verbs
+   (`backends`, `config`). Every knob is a verb or a config value, never
+   a `--flag`. This keeps the shebang line flag-free, which also
+   sidesteps the `env -S` trap (see below).
 2. **The whole file is the prompt.** `airan` reads the frontmatter for
    *routing* but never strips it. The agent seeing its own constraints
    (`backend`, `model`, "don't touch the public API") is a feature, not
@@ -39,6 +39,20 @@ left; pluggable adapters on the right.
    library package is fully unit-tested behind an injected exec
    function; the only un-coverable code (the `execve` itself) lives in
    the `cmd/airan` entry-point shim, excluded via `.covignore`.
+
+## Commands
+
+```
+airan FILE          dispatch the agent file (the primary use)
+airan backends      list the built-in backends, marking the default
+airan config        show the config path and current default backend
+airan config NAME   set NAME as the default backend
+```
+
+`backends` and `config` are reserved words. An agent file dispatched via
+shebang always arrives as a *path* (with a separator) — e.g.
+`airan ./build.agent` or the absolute path the kernel resolves from
+`$PATH` — so it can never collide with the bare verbs.
 
 ## The agent file
 
@@ -68,13 +82,35 @@ The backend name is resolved in precedence order:
 1. **Frontmatter `backend:`** — explicit, per-file. Wins.
 2. **`AIRAN_BACKEND` env var** — run a whole repo through one agent with
    zero file edits: `AIRAN_BACKEND=aider ./build.agent`.
+3. **Configured default** — the `backend:` value in the XDG config file
+   (see below), set via `airan config NAME`.
 
-If neither yields a name, `airan` exits with an error. There is no
-implicit default in v0 — being explicit beats guessing.
+If none yields a name, `airan` exits with an error. There is no
+hard-coded default — the bottom of the chain is whatever *you* configure.
 
-> Project/user config files (`.airanrc`, `~/.config/airan/config`) are
-> a deliberate *future* layer below the env var. Left out of v0 to keep
-> the resolution chain to two obvious sources.
+## Configuration
+
+State lives in a single XDG-standard file:
+
+```
+$XDG_CONFIG_HOME/airan/config      # if $XDG_CONFIG_HOME is set (and absolute)
+$HOME/.config/airan/config         # otherwise
+```
+
+Per the XDG Base Directory spec, a non-absolute `$XDG_CONFIG_HOME` is
+ignored in favour of the `$HOME` fallback. The file uses the same
+`backend: NAME` line syntax as agent-file frontmatter:
+
+```
+# airan config
+backend: claude
+```
+
+It is read for the default backend and written by `airan config NAME`
+(creating the directory as needed). `airan config` with no argument
+prints the resolved path and the current default; `airan backends` marks
+the default in its listing. Today the file holds exactly one key
+(`backend:`); more may follow as the canonical contract grows.
 
 ## Adapters
 
@@ -149,7 +185,7 @@ user-visible change gets a `CHANGELOG.md` entry.
 
 ## Out of scope for v0
 
-Flags of any kind · args passthrough · stdin piping · `--dry-run` ·
-multi-backend fanout · pinning/lockfiles · config files · the `model`
-and `tools` frontmatter keys · TOML adapters. All are plausible
-extensions; none ship until the no-params floor proves itself.
+Option flags of any kind · args passthrough · stdin piping · `--dry-run` ·
+multi-backend fanout · pinning/lockfiles · per-project config · the
+`model` and `tools` frontmatter keys · TOML adapters. All are plausible
+extensions; none ship until the core proves itself.
