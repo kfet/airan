@@ -1,4 +1,4 @@
-package airun
+package airan
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 
 // envBackend is the environment variable consulted when the agent file
 // carries no explicit "backend:" in its frontmatter.
-const envBackend = "AIRUN_BACKEND"
+const envBackend = "AIRAN_BACKEND"
 
 // promptToken is the placeholder slot in an adapter's argument template
 // that gets replaced with the full agent file contents (the prompt).
@@ -18,16 +18,16 @@ const promptToken = "{{prompt}}"
 
 // Sentinel errors. Callers may test for these with errors.Is.
 var (
-	// ErrUsage is returned when airun is invoked with anything other
+	// ErrUsage is returned when airan is invoked with anything other
 	// than exactly one argument (the agent file).
-	ErrUsage = errors.New("airun: usage: airun FILE")
+	ErrUsage = errors.New("airan: usage: airan FILE")
 
 	// ErrNoBackend is returned when no backend can be resolved from the
-	// file's frontmatter or the AIRUN_BACKEND environment variable.
-	ErrNoBackend = errors.New("airun: no backend: set 'backend:' in the file's frontmatter or $" + envBackend)
+	// file's frontmatter or the AIRAN_BACKEND environment variable.
+	ErrNoBackend = errors.New("airan: no backend: set 'backend:' in the file's frontmatter or $" + envBackend)
 )
 
-// adapter maps the canonical airun contract onto a concrete CLI. args
+// adapter maps the canonical airan contract onto a concrete CLI. args
 // is an argument template: the element equal to promptToken is replaced
 // with the prompt at resolution time; every other element is literal.
 type adapter struct {
@@ -77,7 +77,7 @@ func Resolve(path string, getenv func(string) string) (Spec, error) {
 
 	ad, ok := registry[backend]
 	if !ok {
-		return Spec{}, fmt.Errorf("airun: unknown backend %q (known: %s)", backend, strings.Join(knownBackends(), ", "))
+		return Spec{}, fmt.Errorf("airan: unknown backend %q (known: %s)", backend, strings.Join(knownBackends(), ", "))
 	}
 
 	args := make([]string, len(ad.args))

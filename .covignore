@@ -5,7 +5,7 @@
 # Convention: file-level patterns only. No line numbers, no
 # per-function regexes — both rot on any nearby edit.
 
-# Entry-point shim: cmd/airun/main.go is glue around the library. Its
+# Entry-point shim: cmd/airan/main.go is glue around the library. Its
 # only real logic is the syscall.Exec replacement, which can't run
 # under the test process without replacing it.
-^github.com/kfet/airun/cmd/[^/]+/main\.go:
+^github.com/kfet/airan/cmd/[^/]+/main\.go:

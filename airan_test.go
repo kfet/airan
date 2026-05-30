@@ -1,4 +1,4 @@
-package airun
+package airan
 
 import (
 	"errors"
@@ -22,7 +22,7 @@ func writeTemp(t *testing.T, content string) string {
 func noEnv(string) string { return "" }
 
 func TestResolve_FrontmatterBackend(t *testing.T) {
-	content := "#!/usr/bin/env airun\n---\nbackend: claude\n---\nDo the thing.\n"
+	content := "#!/usr/bin/env airan\n---\nbackend: claude\n---\nDo the thing.\n"
 	spec, err := Resolve(writeTemp(t, content), noEnv)
 	if err != nil {
 		t.Fatalf("Resolve: %v", err)
@@ -164,13 +164,13 @@ func TestFrontmatterBackend(t *testing.T) {
 		content string
 		want    string
 	}{
-		{"shebang then frontmatter", "#!/usr/bin/env airun\n---\nbackend: claude\n---\nx", "claude"},
+		{"shebang then frontmatter", "#!/usr/bin/env airan\n---\nbackend: claude\n---\nx", "claude"},
 		{"leading blank lines", "\n\n---\nbackend: fir\n---\n", "fir"},
 		{"inline comment stripped", "---\nbackend: aider   # use aider\n---\n", "aider"},
 		{"other keys before backend", "---\nmodel: opus\nbackend: claude\n---\n", "claude"},
 		{"no frontmatter fence", "just a prompt\nbackend: claude\n", ""},
 		{"empty file", "", ""},
-		{"only shebang", "#!/usr/bin/env airun\n", ""},
+		{"only shebang", "#!/usr/bin/env airan\n", ""},
 		{"closing fence before backend", "---\nmodel: opus\n---\nbackend: claude\n", ""},
 		{"unclosed frontmatter no backend", "---\nmodel: opus\nmode: print\n", ""},
 		{"empty backend value", "---\nbackend:\n---\n", ""},

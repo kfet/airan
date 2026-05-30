@@ -20,7 +20,7 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
-          # airun has no runtime deps and therefore no go.sum.
+          # airan has no runtime deps and therefore no go.sum.
           # Disable setup-go's module cache to silence the
           # "Dependencies file is not found" warning.
           cache: false

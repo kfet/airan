@@ -1,21 +1,21 @@
 # AGENTS.md
 
-Guidance for AI agents working on `airun`.
+Guidance for AI agents working on `airan`.
 
 ## Scope
 
-`airun` is the `env` for AI coding agents: a **small, focused** shebang
+`airan` is the `env` for AI coding agents: a **small, focused** shebang
 dispatcher. It reads an agent file, resolves a backend, and execs the
 matching agent CLI with the whole file as the prompt. Building blocks:
 
 - `Resolve` / `Spec` — read the file, pick the backend, build the
-  concrete invocation (`airun.go`).
+  concrete invocation (`airan.go`).
 - `Run` / `ExecFunc` — the program entry point; validates args, resolves,
-  execs via an injected exec function (`airun.go`).
-- `registry` — the in-code table of backend adapters (`airun.go`).
+  execs via an injected exec function (`airan.go`).
+- `registry` — the in-code table of backend adapters (`airan.go`).
 - `frontmatterBackend` / `parseBackendLine` — frontmatter parsing
-  (`airun.go`).
-- `cmd/airun/main.go` — the entry-point shim wiring `Run` to the real
+  (`airan.go`).
+- `cmd/airan/main.go` — the entry-point shim wiring `Run` to the real
   `syscall.Exec`.
 
 `doc.go` is the source of truth for the public API surface; keep it, this
@@ -24,7 +24,7 @@ list, and `docs/DESIGN.md` in sync.
 **Do not** add flags, parameters, args passthrough, stdin piping,
 `--dry-run`, config files, or new frontmatter keys without an explicit
 decision. v0 is deliberately **no-params**: the interface is the file
-plus `AIRUN_BACKEND`. See `docs/DESIGN.md` § "Out of scope for v0".
+plus `AIRAN_BACKEND`. See `docs/DESIGN.md` § "Out of scope for v0".
 
 ## Constraints
 
@@ -37,7 +37,7 @@ plus `AIRUN_BACKEND`. See `docs/DESIGN.md` § "Out of scope for v0".
 - **The whole file is the prompt.** Never strip the shebang or
   frontmatter before handing the content to a backend.
 - **Exec is injected.** Keep the real `syscall.Exec` in
-  `cmd/airun/main.go` so the library stays 100% testable; `Run` takes an
+  `cmd/airan/main.go` so the library stays 100% testable; `Run` takes an
   `ExecFunc`.
 
 ## Workflow
@@ -52,6 +52,6 @@ plus `AIRUN_BACKEND`. See `docs/DESIGN.md` § "Out of scope for v0".
 
 ## Coverage exemptions
 
-`cmd/airun/main.go` is excluded from the coverage gate via `.covignore` —
+`cmd/airan/main.go` is excluded from the coverage gate via `.covignore` —
 it is the entry-point shim whose only real logic is the `syscall.Exec`
 process replacement, which can't run under the test process.

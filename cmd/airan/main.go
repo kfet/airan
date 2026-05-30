@@ -1,19 +1,19 @@
-// Command airun is the env for AI coding agents: a shebang dispatcher
+// Command airan is the env for AI coding agents: a shebang dispatcher
 // that resolves an agent file to a concrete agent CLI and execs it.
 //
 // Usage:
 //
-//	airun FILE
+//	airan FILE
 //
 // Typically invoked via a shebang rather than directly:
 //
-//	#!/usr/bin/env airun
+//	#!/usr/bin/env airan
 //	---
 //	backend: claude
 //	---
 //	<prompt body>
 //
-// See package github.com/kfet/airun for the resolution and adapter
+// See package github.com/kfet/airan for the resolution and adapter
 // logic.
 package main
 
@@ -23,11 +23,11 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/kfet/airun"
+	"github.com/kfet/airan"
 )
 
 func main() {
-	if err := airun.Run(os.Args[1:], os.Getenv, os.Environ(), execProcess); err != nil {
+	if err := airan.Run(os.Args[1:], os.Getenv, os.Environ(), execProcess); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

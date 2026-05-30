@@ -59,7 +59,7 @@ run-tests: check
 	@rm -f coverage.tmp.out
 
 build: | $(BINDIR)
-	$(call RUN,build airun,go build -trimpath -o $(BINDIR)/airun ./cmd/airun)
+	$(call RUN,build airan,go build -trimpath -o $(BINDIR)/airan ./cmd/airan)
 
 $(BINDIR):
 	@mkdir -p $(BINDIR)

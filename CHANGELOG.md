@@ -6,13 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Initial implementation of `airun` — the `env` for AI coding agents.
-- `airun FILE` reads an agent file, resolves a backend, and execs the
+- Initial implementation of `airan` — the `env` for AI coding agents.
+- `airan FILE` reads an agent file, resolves a backend, and execs the
   matching agent CLI with the **whole file** (frontmatter included) as
   the prompt. No flags, no parameters — the interface is the file plus
-  the `AIRUN_BACKEND` environment variable.
+  the `AIRAN_BACKEND` environment variable.
 - Backend resolution precedence: frontmatter `backend:` key, then
-  `AIRUN_BACKEND`.
+  `AIRAN_BACKEND`.
 - Built-in backend adapters: `claude` (`claude -p`), `fir` (`fir -p`),
   `aider` (`aider --message`).
 - Library API: `Resolve`, `Run`, `Spec`, `ExecFunc`, and the sentinel
