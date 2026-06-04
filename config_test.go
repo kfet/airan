@@ -156,19 +156,22 @@ func TestCmdBackends(t *testing.T) {
 	t.Run("marks default", func(t *testing.T) {
 		getenv, _ := tempXDG(t, "fir")
 		var buf bytes.Buffer
-		if err := cmdBackends(nil, getenv, &buf); err != nil {
+		if err := cmdBackends(nil, getenv, okLook, &buf); err != nil {
 			t.Fatal(err)
 		}
 		out := buf.String()
-		if !strings.Contains(out, "fir  (default)") {
+		if !strings.Contains(out, "fir") || !strings.Contains(out, "(default)") {
 			t.Errorf("output missing default marker:\n%s", out)
 		}
-		if !strings.Contains(out, "aider\n") || !strings.Contains(out, "claude\n") {
+		if !strings.Contains(out, "available") {
+			t.Errorf("output missing availability:\n%s", out)
+		}
+		if !strings.Contains(out, "aider") || !strings.Contains(out, "claude") {
 			t.Errorf("output missing backends:\n%s", out)
 		}
 	})
 	t.Run("extra args -> usage", func(t *testing.T) {
-		if err := cmdBackends([]string{"x"}, noEnv, &bytes.Buffer{}); !errors.Is(err, ErrUsage) {
+		if err := cmdBackends([]string{"x"}, noEnv, noLook, &bytes.Buffer{}); !errors.Is(err, ErrUsage) {
 			t.Errorf("err = %v, want ErrUsage", err)
 		}
 	})
@@ -255,7 +258,7 @@ func TestRun_Subcommands(t *testing.T) {
 	t.Run("backends", func(t *testing.T) {
 		getenv, _ := tempXDG(t, "")
 		var buf bytes.Buffer
-		if err := Run([]string{"backends"}, getenv, nil, &buf, exec); err != nil {
+		if err := Run([]string{"backends"}, getenv, nil, &buf, exec, okLook); err != nil {
 			t.Fatal(err)
 		}
 		if !strings.Contains(buf.String(), "claude") {
@@ -264,11 +267,11 @@ func TestRun_Subcommands(t *testing.T) {
 	})
 	t.Run("config set then show", func(t *testing.T) {
 		getenv, _ := tempXDG(t, "")
-		if err := Run([]string{"config", "aider"}, getenv, nil, &bytes.Buffer{}, exec); err != nil {
+		if err := Run([]string{"config", "aider"}, getenv, nil, &bytes.Buffer{}, exec, noLook); err != nil {
 			t.Fatal(err)
 		}
 		var buf bytes.Buffer
-		if err := Run([]string{"config"}, getenv, nil, &buf, exec); err != nil {
+		if err := Run([]string{"config"}, getenv, nil, &buf, exec, noLook); err != nil {
 			t.Fatal(err)
 		}
 		if !strings.Contains(buf.String(), "aider") {

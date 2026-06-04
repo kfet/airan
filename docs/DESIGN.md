@@ -43,10 +43,14 @@ left; pluggable adapters on the right.
 ## Commands
 
 ```
-airan FILE          dispatch the agent file (the primary use)
-airan backends      list the built-in backends, marking the default
-airan config        show the config path and current default backend
-airan config NAME   set NAME as the default backend
+airan FILE                    dispatch the agent file (the primary use)
+airan backends                list backends (built-in + custom), with
+                              default/custom tags and $PATH availability
+airan backends add NAME CMD…  define or replace a custom backend
+airan backends remove NAME    delete a custom backend
+airan config                  show the config path, current default, and
+                              any custom backends
+airan config NAME             set NAME as the default backend
 ```
 
 `backends` and `config` are reserved words. An agent file dispatched via
@@ -109,8 +113,36 @@ backend: claude
 It is read for the default backend and written by `airan config NAME`
 (creating the directory as needed). `airan config` with no argument
 prints the resolved path and the current default; `airan backends` marks
-the default in its listing. Today the file holds exactly one key
-(`backend:`); more may follow as the canonical contract grows.
+the default in its listing. Beyond the `backend:` default key, the file
+may also declare **custom backends** (see Adapters below); writes
+preserve existing comments and unrelated lines.
+
+## Custom backends
+
+Backends are not limited to the built-in table. The config file can
+declare additional adapters with `backend.NAME: CMD ARGS…` lines, where
+the args carry the `{{prompt}}` placeholder:
+
+```
+# airan config
+backend: mycli
+backend.mycli: mycli --message {{prompt}}
+```
+
+The command line is split on whitespace (no shell quoting); the first
+field is the command, the rest are literal args, and the `{{prompt}}`
+token is replaced with the whole file at dispatch time. Manage them with:
+
+```sh
+airan backends add mycli mycli --message {{prompt}}   # define / replace
+airan backends remove mycli                            # delete
+airan backends                                         # list + availability
+```
+
+A custom backend **shadows** a built-in of the same name, so you can
+override `claude`/`fir`/`aider` invocations without recompiling. The
+`airan backends` listing checks each backend's command against `$PATH`
+and reports it as `available` or `missing`.
 
 ## Adapters
 
@@ -130,9 +162,11 @@ is replaced with the prompt (the whole file). The resolved command then
 terminal, signals, and exit code directly — `airan` adds no runtime
 overhead once it has dispatched.
 
-Adding a backend today is a one-line table entry. A declarative
-(TOML) adapter format — so users can add backends without recompiling —
-is the natural next extension once the canonical fields settle.
+Adding a backend no longer requires recompiling: a `backend.NAME:` line
+in the config file (or `airan backends add`) registers a custom adapter.
+The in-code table remains the set of built-in defaults; a TOML adapter
+format with richer fields is the natural next extension once the
+canonical fields settle.
 
 ### Canonical fields (future)
 
@@ -168,10 +202,11 @@ stays portable across every `env`.
 - **macOS:** Homebrew. `brew install kfet/tap/airan` (a `airan.rb`
   formula in the tap, building from the tagged source with the Go
   toolchain).
-- **Any Unix:** `install.sh` — a POSIX shell installer that builds the
-  binary from source via the Go toolchain and drops it on `$PATH`
-  (`~/.local/bin` by default, override with `PREFIX`). Run straight from
-  a clone, or piped from a release URL.
+- **Any Unix:** `install.sh` — a POSIX shell installer. Piped from the
+  release URL it detects the host OS/arch and downloads the matching
+  pre-built binary from GitHub Releases (no Go toolchain needed); run
+  from a clone it builds from source instead. Drops the binary on
+  `$PATH` (`~/.local/bin` by default, override with `PREFIX`).
 - **Go users:** `go install github.com/kfet/airan/cmd/airan@latest`.
 
 ## Repository model

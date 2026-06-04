@@ -27,7 +27,7 @@ import (
 )
 
 func main() {
-	if err := airan.Run(os.Args[1:], os.Getenv, os.Environ(), os.Stdout, execProcess); err != nil {
+	if err := airan.Run(os.Args[1:], os.Getenv, os.Environ(), os.Stdout, execProcess, exec.LookPath); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

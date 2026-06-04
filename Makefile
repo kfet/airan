@@ -61,6 +61,18 @@ run-tests: check
 build: | $(BINDIR)
 	$(call RUN,build airan,go build -trimpath -o $(BINDIR)/airan ./cmd/airan)
 
+# Build binaries for all supported platforms
+build-all:
+	@mkdir -p dist
+	@for platform in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 linux/386 linux/arm freebsd/amd64 freebsd/386 windows/amd64 windows/386 windows/arm64; do \
+		GOOS=$${platform%/*}; \
+		GOARCH=$${platform#*/}; \
+		ext=""; \
+		if [ "$$GOOS" = "windows" ]; then ext=".exe"; fi; \
+		echo "Building $$GOOS-$$GOARCH..."; \
+		GOOS=$$GOOS GOARCH=$$GOARCH go build -trimpath -ldflags="-s -w" -o dist/airan-$$GOOS-$$GOARCH$$ext ./cmd/airan || exit 1; \
+	done
+
 $(BINDIR):
 	@mkdir -p $(BINDIR)
 

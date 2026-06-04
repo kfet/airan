@@ -38,19 +38,45 @@ Backend resolution, in precedence order:
 3. The configured default backend (`airan config NAME`).
 
 Built-in backends: `claude` (`claude -p`), `fir` (`fir -p`), `aider`
-(`aider --message`).
+(`aider --message`). You can also define your own — see Custom backends.
 
 ## Commands
 
 ```sh
-airan FILE          # dispatch the agent file (the primary use)
-airan backends      # list built-in backends, marking the default
-airan config        # show config path + current default backend
-airan config NAME   # set NAME as the default backend
+airan FILE                    # dispatch the agent file (the primary use)
+airan backends                # list backends + $PATH availability, marking the default
+airan backends add NAME CMD…  # define / replace a custom backend
+airan backends remove NAME    # delete a custom backend
+airan config                  # show config path, default + custom backends
+airan config NAME             # set NAME as the default backend
 ```
 
 Config lives in one XDG-standard file —
 `$XDG_CONFIG_HOME/airan/config`, else `~/.config/airan/config`.
+
+## Custom backends
+
+Not limited to the built-ins: declare your own adapter and `airan` will
+route to it. The command line carries a `{{prompt}}` placeholder that is
+replaced with the whole agent file at dispatch time.
+
+```sh
+airan backends add mycli mycli --message {{prompt}}
+airan backends                # mycli now shows up, with availability
+```
+
+This writes a line to the config file, which you can also edit directly:
+
+```
+# airan config
+backend: mycli
+backend.mycli: mycli --message {{prompt}}
+```
+
+A custom backend shadows a built-in of the same name, so you can override
+how `claude`/`fir`/`aider` are invoked without recompiling. `airan
+backends` checks each backend's command against `$PATH` and reports it as
+`available` or `missing`.
 
 See [docs/DESIGN.md](docs/DESIGN.md) for the full design and rationale.
 
@@ -62,7 +88,13 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the full design and rationale.
 brew install kfet/tap/airan
 ```
 
-**Any Unix:**
+**Any Unix (curl — downloads a pre-built binary, no Go needed):**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/kfet/airan/main/install.sh | sh
+```
+
+**Any Unix (from source — requires Go):**
 
 ```sh
 ./install.sh                 # from a clone (PREFIX overridable)

@@ -21,7 +21,7 @@ const promptToken = "{{prompt}}"
 var (
 	// ErrUsage is returned when airan is invoked with an argument list
 	// it does not understand.
-	ErrUsage = errors.New("airan: usage: airan FILE | airan backends | airan config [BACKEND]")
+	ErrUsage = errors.New("airan: usage: airan FILE | airan backends [add NAME CMD... | remove NAME] | airan config [BACKEND]")
 
 	// ErrNoBackend is returned when no backend can be resolved from the
 	// file's frontmatter, the AIRAN_BACKEND environment variable, or the
@@ -59,6 +59,12 @@ type Spec struct {
 // not return; it returns an error only if the exec itself fails.
 type ExecFunc func(cmd string, args []string, environ []string) error
 
+// LookFunc reports the resolved $PATH location of an executable,
+// mirroring os/exec.LookPath. A non-nil error means the command was not
+// found. It is used by `airan backends` to report which backends are
+// actually installed.
+type LookFunc func(cmd string) (string, error)
+
 // Resolve reads the agent file at path, determines its backend, and
 // returns the concrete Spec to exec. The entire file — shebang and
 // frontmatter included — is passed through as the prompt.
@@ -69,24 +75,25 @@ func Resolve(path string, getenv func(string) string) (Spec, error) {
 	}
 	content := string(data)
 
+	cfg, err := loadConfig(getenv)
+	if err != nil {
+		return Spec{}, err
+	}
+
 	backend := frontmatterBackend(content)
 	if backend == "" {
 		backend = getenv(envBackend)
 	}
 	if backend == "" {
-		def, err := loadDefault(getenv)
-		if err != nil {
-			return Spec{}, err
-		}
-		backend = def
+		backend = cfg.defaultBackend
 	}
 	if backend == "" {
 		return Spec{}, ErrNoBackend
 	}
 
-	ad, ok := registry[backend]
+	ad, ok := lookupBackend(backend, cfg)
 	if !ok {
-		return Spec{}, fmt.Errorf("airan: unknown backend %q (known: %s)", backend, strings.Join(knownBackends(), ", "))
+		return Spec{}, fmt.Errorf("airan: unknown backend %q (known: %s)", backend, strings.Join(backendNames(cfg), ", "))
 	}
 
 	args := make([]string, len(ad.args))
@@ -104,7 +111,7 @@ func Resolve(path string, getenv func(string) string) (Spec, error) {
 // program name (i.e. os.Args[1:]). The first argument selects behaviour:
 //
 //	airan FILE          dispatch the agent file (the primary use)
-//	airan backends      list the built-in backends
+//	airan backends      list backends (built-in + custom) and availability
 //	airan config        show the config path and default backend
 //	airan config NAME   set NAME as the default backend
 //
@@ -112,11 +119,11 @@ func Resolve(path string, getenv func(string) string) (Spec, error) {
 // via shebang always arrives as a path (with a separator), so it can
 // never collide with them. On a successful dispatch Run does not return
 // — exec replaces the process.
-func Run(args []string, getenv func(string) string, environ []string, out io.Writer, exec ExecFunc) error {
+func Run(args []string, getenv func(string) string, environ []string, out io.Writer, exec ExecFunc, look LookFunc) error {
 	if len(args) >= 1 {
 		switch args[0] {
 		case "backends":
-			return cmdBackends(args[1:], getenv, out)
+			return cmdBackends(args[1:], getenv, look, out)
 		case "config":
 			return cmdConfig(args[1:], getenv, out)
 		}
@@ -131,10 +138,38 @@ func Run(args []string, getenv func(string) string, environ []string, out io.Wri
 	return exec(spec.Cmd, spec.Args, environ)
 }
 
-// knownBackends returns the registered backend names, sorted.
+// knownBackends returns the built-in backend names, sorted.
 func knownBackends() []string {
 	names := make([]string, 0, len(registry))
 	for name := range registry {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// lookupBackend resolves a backend name to its adapter, preferring a
+// user-defined custom backend over a built-in of the same name.
+func lookupBackend(name string, cfg config) (adapter, bool) {
+	if ad, ok := cfg.backends[name]; ok {
+		return ad, true
+	}
+	ad, ok := registry[name]
+	return ad, ok
+}
+
+// backendNames returns all backend names — built-in plus custom — sorted
+// and de-duplicated.
+func backendNames(cfg config) []string {
+	set := make(map[string]bool, len(registry)+len(cfg.backends))
+	for name := range registry {
+		set[name] = true
+	}
+	for name := range cfg.backends {
+		set[name] = true
+	}
+	names := make([]string, 0, len(set))
+	for name := range set {
 		names = append(names, name)
 	}
 	sort.Strings(names)
