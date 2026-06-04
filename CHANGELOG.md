@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `make install` target — builds and installs `airan` into `$PREFIX`
+  (default `~/.local`).
+
 - Initial implementation of `airan` — the `env` for AI coding agents.
 - `airan FILE` reads an agent file, resolves a backend, and execs the
   matching agent CLI with the **whole file** (frontmatter included) as

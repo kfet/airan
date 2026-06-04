@@ -97,7 +97,7 @@ curl -fsSL https://raw.githubusercontent.com/kfet/airan/main/install.sh | sh
 **Any Unix (from source — requires Go):**
 
 ```sh
-./install.sh                 # from a clone (PREFIX overridable)
+make install                 # builds and installs (PREFIX overridable)
 ```
 
 **Go:**

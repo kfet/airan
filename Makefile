@@ -61,6 +61,13 @@ run-tests: check
 build: | $(BINDIR)
 	$(call RUN,build airan,go build -trimpath -o $(BINDIR)/airan ./cmd/airan)
 
+# Build and install into PREFIX (default ~/.local).
+PREFIX ?= $(HOME)/.local
+install: build
+	@mkdir -p $(PREFIX)/bin
+	@install -m 0755 $(BINDIR)/airan $(PREFIX)/bin/airan
+	@echo "installed: $(PREFIX)/bin/airan"
+
 # Build binaries for all supported platforms
 build-all:
 	@mkdir -p dist
