@@ -85,7 +85,7 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the full design and rationale.
 **macOS (Homebrew):**
 
 ```sh
-brew install kfet/tap/airan
+brew install kfet/ai/airan
 ```
 
 **Any Unix (curl — downloads a pre-built binary, no Go needed):**

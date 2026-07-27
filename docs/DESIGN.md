@@ -199,7 +199,7 @@ stays portable across every `env`.
 
 ## Distribution
 
-- **macOS:** Homebrew. `brew install kfet/tap/airan` (a `airan.rb`
+- **macOS:** Homebrew. `brew install kfet/ai/airan` (a `airan.rb`
   formula in the tap, building from the tagged source with the Go
   toolchain).
 - **Any Unix:** `install.sh` — a POSIX shell installer. Piped from the

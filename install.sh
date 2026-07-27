@@ -6,7 +6,7 @@
 #   PREFIX=/usr/local ./install.sh
 #
 # To build from source instead, clone the repo and run `make`.
-# macOS users may prefer:  brew install kfet/tap/airan
+# macOS users may prefer:  brew install kfet/ai/airan
 
 set -eu
 
