@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-27
+
+### Changed
+
+- Homebrew install instructions now point at the `kfet/ai` tap:
+  `brew install kfet/ai/airan` (was `kfet/tap/airan`). Updated in
+  `README.md`, `install.sh`, and `docs/DESIGN.md`.
+
 ## [0.1.0] - 2026-06-03
 
 ### Added
