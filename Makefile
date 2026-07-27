@@ -43,7 +43,7 @@ vet:
 # staticcheck runs via the go.mod `tool` directive — no manual install,
 # version pinned in go.mod/go.sum. See `go tool` (Go 1.24+).
 staticcheck:
-	$(call RUN,staticcheck clean,out=$$(go tool staticcheck ./... 2>&1 || true); test -z "$$out" || { echo "$$out"; exit 1; })
+	$(call RUN,staticcheck clean,go tool staticcheck ./...)
 
 # Run unit tests with race + shuffle + fresh cache + 100% coverage gate.
 run-tests: check
