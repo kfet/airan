@@ -1,0 +1,95 @@
+version: 2
+project_name: airan
+
+builds:
+  - main: ./cmd/airan/
+    binary: airan
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+    flags:
+      - -trimpath
+    goos:
+      - darwin
+      - linux
+      - freebsd
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - "386"
+      - arm
+    goarm:
+      - "6"
+    # Keep exactly the platform set the previous hand-rolled matrix
+    # shipped — install.sh maps uname to these names.
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: darwin
+        goarch: arm
+      - goos: freebsd
+        goarch: arm64
+      - goos: freebsd
+        goarch: arm
+      - goos: windows
+        goarch: arm
+
+archives:
+  # Raw binaries, not tarballs: install.sh downloads the asset directly.
+  - formats: [binary]
+    name_template: "airan-{{ .Os }}-{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+  extra_files:
+    - glob: LICENSE
+
+release:
+  github:
+    owner: kfet
+    name: airan
+  prerelease: auto
+  name_template: "airan {{.Version}}"
+  extra_files:
+    - glob: LICENSE
+
+# ---------------------------------------------------------------------------
+# Homebrew tap
+#
+# GoReleaser regenerates Formula/airan.rb on kfet/homebrew-ai on every
+# release (the shared tap for fir, poe-acp, slack-acp).
+#
+# Users install with:
+#   brew install kfet/ai/airan
+# ---------------------------------------------------------------------------
+brews:
+  - name: airan
+    repository:
+      owner: kfet
+      name: homebrew-ai
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    url_template: "https://github.com/kfet/airan/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    homepage: "https://github.com/kfet/airan"
+    description: "The env for AI coding agents — a shebang dispatcher for agent files"
+    license: MIT
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "airan: update to {{ .Tag }}"
+    skip_upload: auto
+    # airan has no --version flag; `backends` lists adapters and exits 0.
+    test: |
+      system "#{bin}/airan", "backends"
+    # The downloaded artifact is named airan-<os>-<arch> (archives.formats=binary
+    # emits raw binaries, not tarballs), so `bin.install "airan"` fails with
+    # ENOENT. Glob the staged artifact and rename it on install.
+    install: |
+      bin.install Dir["airan-*"].first => "airan"
+
+changelog:
+  use: github-native

@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Releases are now built by **GoReleaser** (`.goreleaser.yaml`) instead
+  of a hand-rolled cross-compile loop in the workflow. Same eleven
+  OS/arch assets under the same names, so `install.sh` is unaffected.
+  GoReleaser also regenerates `Formula/airan.rb` on the `kfet/homebrew-ai`
+  tap on every tagged release, so `brew install kfet/ai/airan` tracks
+  the latest version automatically.
+
 - staticcheck is now a pinned go.mod `tool` dependency and runs via
   `go tool staticcheck` — `make all` no longer silently skips it when
   the binary is absent, and nothing needs installing by hand. This

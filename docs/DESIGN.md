@@ -199,9 +199,9 @@ stays portable across every `env`.
 
 ## Distribution
 
-- **macOS:** Homebrew. `brew install kfet/ai/airan` (a `airan.rb`
-  formula in the tap, building from the tagged source with the Go
-  toolchain).
+- **macOS:** Homebrew. `brew install kfet/ai/airan` — GoReleaser
+  regenerates `Formula/airan.rb` on `kfet/homebrew-ai` (the shared tap
+  with `fir`, `poe-acp`, `slack-acp`) on every tagged release.
 - **Any Unix:** `install.sh` — a POSIX shell installer. Piped from the
   release URL it detects the host OS/arch and downloads the matching
   pre-built binary from GitHub Releases (no Go toolchain needed); run
