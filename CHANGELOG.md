@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- staticcheck is now a pinned go.mod `tool` dependency and runs via
+  `go tool staticcheck` — `make all` no longer silently skips it when
+  the binary is absent, and nothing needs installing by hand. This
+  raises the go.mod floor to **1.25** (what the `tool` directive and
+  staticcheck require); CI's matrix floor moves 1.21 → 1.25.
+
 ## [0.1.1] - 2026-07-27
 
 ### Changed

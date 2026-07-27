@@ -214,8 +214,10 @@ stays portable across every `env`.
 Cloned from the sibling `kfet/{covgate,pinexec}` libraries: Go,
 stdlib-only, a quiet-runner `Makefile` whose default target is gofmt +
 `go vet` + staticcheck + race/shuffle tests + a **100% coverage gate**
-(via `covgate`) + build. CI runs `make all` on the go.mod floor (1.21)
-and latest stable. `AGENTS.md` documents constraints for agents; every
+(via `covgate`) + build. staticcheck is pinned as a go.mod `tool`
+dependency, so `make all` needs no manual tool install. CI runs
+`make all` on the go.mod floor (1.25 — what the `tool` directive
+requires) and latest stable. `AGENTS.md` documents constraints for agents; every
 user-visible change gets a `CHANGELOG.md` entry.
 
 ## Out of scope for v0

@@ -12,20 +12,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 1.21 = declared floor in go.mod; 1.26 = latest stable.
-        go: ["1.21", "1.26"]
+        # 1.25 = declared floor in go.mod; 1.26 = latest stable.
+        go: ["1.25", "1.26"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
-          # airan has no runtime deps and therefore no go.sum.
-          # Disable setup-go's module cache to silence the
-          # "Dependencies file is not found" warning.
+          # airan has no runtime deps; go.sum covers the pinned
+          # `tool` dependency (staticcheck) only.
           cache: false
       - run: go version
-      # make all runs gofmt + vet + (staticcheck if present) + race +
+      # make all runs gofmt + vet + staticcheck (via go tool) + race +
       # shuffle + 100% coverage gate.
       - run: make all
         env:

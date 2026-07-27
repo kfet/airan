@@ -1,4 +1,4 @@
-.PHONY: all check fmt fmtcheck vet staticcheck _staticcheck run-tests build open_coverage clean
+.PHONY: all check fmt fmtcheck vet staticcheck run-tests build open_coverage clean
 
 BINDIR := bin
 
@@ -40,16 +40,10 @@ fmtcheck:
 vet:
 	$(call RUN,go vet clean,go vet ./...)
 
-# staticcheck is optional. Install with:
-#   go install honnef.co/go/tools/cmd/staticcheck@latest
+# staticcheck runs via the go.mod `tool` directive — no manual install,
+# version pinned in go.mod/go.sum. See `go tool` (Go 1.24+).
 staticcheck:
-	@if ! command -v staticcheck >/dev/null 2>&1; then \
-		echo "(staticcheck not installed — skipping)"; exit 0; \
-	fi; \
-	$(MAKE) --no-print-directory _staticcheck
-
-_staticcheck:
-	$(call RUN,staticcheck clean,out=$$(staticcheck ./... 2>&1 | grep -v 'file requires newer Go version' || true); test -z "$$out" || { echo "$$out"; exit 1; })
+	$(call RUN,staticcheck clean,out=$$(go tool staticcheck ./... 2>&1 || true); test -z "$$out" || { echo "$$out"; exit 1; })
 
 # Run unit tests with race + shuffle + fresh cache + 100% coverage gate.
 run-tests: check
