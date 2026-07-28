@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-28
+
 ### Changed
 
 - Releases are now built by **GoReleaser** (`.goreleaser.yaml`) instead
