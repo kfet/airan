@@ -44,12 +44,34 @@ Built-in backends: `claude` (`claude -p`), `fir` (`fir -p`), `aider`
 
 ```sh
 airan FILE                    # dispatch the agent file (the primary use)
+airan --prepend TEXT FILE     # dispatch, inserting TEXT ahead of the file body
 airan backends                # list backends + $PATH availability, marking the default
 airan backends add NAME CMD…  # define / replace a custom backend
 airan backends remove NAME    # delete a custom backend
 airan config                  # show config path, default + custom backends
 airan config NAME             # set NAME as the default backend
+airan help                    # full synopsis
+airan version                 # print the airan version
 ```
+
+## Composing a prompt with `--prepend`
+
+A static agent file often needs a caller-supplied instruction. `--prepend`
+adds one without rewriting the file:
+
+```sh
+airan --prepend "Apply this to the current host. Report what changed." skill.md
+```
+
+The text is inserted **after** the frontmatter block, not before it, so the
+composed prompt is still a well-formed frontmatter document — byte 0 remains
+the `---` fence (or the shebang), and backend resolution is unaffected.
+Repeat the flag to add several blocks, in order. Without frontmatter, the
+text simply leads.
+
+This is what lets a caller keep the real file path (useful for error
+messages and logging) instead of materialising a temporary file just to
+glue an instruction onto the front.
 
 Config lives in one XDG-standard file —
 `$XDG_CONFIG_HOME/airan/config`, else `~/.config/airan/config`.

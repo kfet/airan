@@ -82,9 +82,8 @@ brews:
       email: bot@goreleaser.com
     commit_msg_template: "airan: update to {{ .Tag }}"
     skip_upload: auto
-    # airan has no --version flag; `backends` lists adapters and exits 0.
     test: |
-      system "#{bin}/airan", "backends"
+      system "#{bin}/airan", "version"
     # The downloaded artifact is named airan-<os>-<arch> (archives.formats=binary
     # emits raw binaries, not tarballs), so `bin.install "airan"` fails with
     # ENOENT. Glob the staged artifact and rename it on install.

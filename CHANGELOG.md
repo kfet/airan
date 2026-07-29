@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `--prepend TEXT` composes a prompt at dispatch time, inserting TEXT
+  ahead of the file body. The text lands **after** the frontmatter block,
+  so the composed prompt stays a well-formed frontmatter document and
+  backend resolution is unchanged. Repeatable; blocks keep their order.
+  This lets a caller add an instruction without rewriting the file or
+  materialising a temporary one.
+
+- `airan help` prints the full synopsis, and `airan version` prints the
+  version (embedded from `VERSION`, so the binary and the tag cannot
+  disagree). Both accept the usual flag spellings — `-h`/`--help` and
+  `-V`/`--version`.
+
+### Fixed
+
+- A non-file first argument is no longer treated as a path. `airan help`
+  and `airan --version` previously failed with
+  `open --version: no such file or directory`. Unrecognised `-`-prefixed
+  arguments now produce a usage error, and `--` marks a literal path.
+
 ## [0.1.2] - 2026-07-28
 
 ### Changed

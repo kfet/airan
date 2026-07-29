@@ -21,7 +21,7 @@ const promptToken = "{{prompt}}"
 var (
 	// ErrUsage is returned when airan is invoked with an argument list
 	// it does not understand.
-	ErrUsage = errors.New("airan: usage: airan FILE | airan backends [add NAME CMD... | remove NAME] | airan config [BACKEND]")
+	ErrUsage = errors.New("airan: usage: airan [--prepend TEXT] FILE — run 'airan help' for the full synopsis")
 
 	// ErrNoBackend is returned when no backend can be resolved from the
 	// file's frontmatter, the AIRAN_BACKEND environment variable, or the
@@ -73,8 +73,14 @@ func Resolve(path string, getenv func(string) string) (Spec, error) {
 	if err != nil {
 		return Spec{}, err
 	}
-	content := string(data)
+	return resolveContent(string(data), getenv)
+}
 
+// resolveContent resolves an already-loaded prompt to a concrete Spec.
+// Because --prepend inserts after the frontmatter block, the composed
+// content still carries its original frontmatter, so backend resolution
+// is identical whether or not text was inserted.
+func resolveContent(content string, getenv func(string) string) (Spec, error) {
 	cfg, err := loadConfig(getenv)
 	if err != nil {
 		return Spec{}, err
@@ -126,12 +132,21 @@ func Run(args []string, getenv func(string) string, environ []string, out io.Wri
 			return cmdBackends(args[1:], getenv, look, out)
 		case "config":
 			return cmdConfig(args[1:], getenv, out)
+		case "help", "-h", "--help":
+			return cmdHelp(out)
+		case "version", "-V", "--version":
+			return cmdVersion(out)
 		}
 	}
-	if len(args) != 1 {
-		return ErrUsage
+	opt, err := parseDispatchArgs(args)
+	if err != nil {
+		return err
 	}
-	spec, err := Resolve(args[0], getenv)
+	data, err := os.ReadFile(opt.file)
+	if err != nil {
+		return err
+	}
+	spec, err := resolveContent(applyPrepend(string(data), opt.prepend), getenv)
 	if err != nil {
 		return err
 	}
