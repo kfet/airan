@@ -40,8 +40,9 @@ fmtcheck:
 vet:
 	$(call RUN,go vet clean,go vet ./...)
 
-# staticcheck runs via the go.mod `tool` directive — no manual install,
-# version pinned in go.mod/go.sum. See `go tool` (Go 1.24+).
+# staticcheck and covgate run via the go.mod `tool` directive — no manual
+# install, version pinned in go.mod/go.sum. See `go tool` (Go 1.24+).
+COVGATE := go tool covgate
 staticcheck:
 	$(call RUN,staticcheck clean,go tool staticcheck ./...)
 
@@ -49,7 +50,7 @@ staticcheck:
 run-tests: check
 	@go clean -testcache
 	$(call RUN,tests pass,go test -race -shuffle=on -cover ./... -coverprofile=coverage.tmp.out)
-	$(call RUN,coverage clean,go run github.com/kfet/covgate/cmd/covgate@v0.1.2 -profile=coverage.tmp.out -out=coverage.out -ignore=.covignore -min=100)
+	$(call RUN,coverage clean,$(COVGATE) -profile=coverage.tmp.out -out=coverage.out -ignore=.covignore -min=100)
 	@rm -f coverage.tmp.out
 
 build: | $(BINDIR)
