@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-09-07
+
 ### Changed
 
 - The root `install.sh` is now **generated** from `install.sh.json` by the
