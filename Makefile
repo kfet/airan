@@ -1,4 +1,10 @@
-.PHONY: all check fmt fmtcheck vet staticcheck run-tests build open_coverage clean
+.PHONY: all check fmt fmtcheck vet staticcheck run-tests build open_coverage clean \
+	check-installsh
+
+# install.sh is GENERATED from install.sh.json by the canonical distkit
+# template (github.com/kfet/distkit/installsh) — never hand-edited. Pinned by
+# version and run with `go run`, so airan's own module stays stdlib-only.
+INSTALLSH := go run github.com/kfet/distkit/cmd/distkit-installsh@v0.1.4
 
 BINDIR := bin
 
@@ -25,11 +31,20 @@ endif
 # detector, shuffled order, fresh cache, and a 100% coverage gate, then the
 # binary build. This is also exactly what CI runs (minus build) — no separate
 # "fast" mode. To iterate faster locally, run `go test ./...` directly.
-all: run-tests build
+all: run-tests build check-installsh
 	@echo "✓ all green"
 
 # Static gates (gofmt + go vet + staticcheck if installed).
 check: fmtcheck vet staticcheck
+
+# Regenerate the root install.sh from install.sh.json.
+install.sh: install.sh.json
+	$(call RUN,generate install.sh,$(INSTALLSH) -o $@)
+
+# Dev-only drift gate: fails the build when the checked-in install.sh no
+# longer matches the template + spec, so a stale copy never reaches a user.
+check-installsh:
+	$(call RUN,install.sh not drifted,$(INSTALLSH) -check)
 
 fmt:
 	@gofmt -w .

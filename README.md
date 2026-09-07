@@ -116,6 +116,11 @@ brew install kfet/ai/airan
 curl -fsSL https://raw.githubusercontent.com/kfet/airan/main/install.sh | sh
 ```
 
+Installs into `BIN_DIR` — `/usr/local/bin` when writable, otherwise
+`~/.local/bin`. Override with `BIN_DIR=…` (or the legacy `PREFIX=…`,
+which means `$PREFIX/bin`), pin a release with `VERSION=v0.1.3`, and set
+`GITHUB_TOKEN` to dodge a spent anonymous API rate limit.
+
 **Any Unix (from source — requires Go):**
 
 ```sh

@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- The root `install.sh` is now **generated** from `install.sh.json` by the
+  canonical template in `github.com/kfet/distkit/installsh` v0.1.4 instead
+  of being hand-written, so the whole kfet family shares one installer.
+  `make install.sh` regenerates it; `make check-installsh` (wired into
+  `make all`, and therefore CI) fails the build when the checked-in copy
+  has drifted. distkit is a dev-only `go run` tool — `airan` itself stays
+  stdlib-only.
+
+  What this gains over the old script: sha256 verification against the
+  release `checksums.txt` (the old one installed unverified), `wget` as a
+  fallback when `curl` is absent, the `armv8l` 32-bit ARM spelling
+  alongside `armv6l`/`armv7l`, `GITHUB_TOKEN` support for private repos
+  and spent rate limits, `VERSION`/`REPO`/`OS`/`ARCH` overrides, atomic
+  install via a sibling temp file (so replacing a running binary cannot
+  fail with ETXTBSY), `sudo` escalation when the destination is not
+  writable, a version smoke test and next-step hints.
+
+  `PREFIX=… ./install.sh` keeps working as before. The destination
+  variable is now `BIN_DIR` and, when neither is set, defaults to
+  `/usr/local/bin` if it is writable and `~/.local/bin` otherwise —
+  previously it was always `~/.local/bin`.
+
 ## [0.1.3] - 2026-07-30
 
 ### Added

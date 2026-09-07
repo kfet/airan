@@ -204,9 +204,22 @@ stays portable across every `env`.
   with `fir`, `poe-acp`, `slack-acp`) on every tagged release.
 - **Any Unix:** `install.sh` — a POSIX shell installer. Piped from the
   release URL it detects the host OS/arch and downloads the matching
-  pre-built binary from GitHub Releases (no Go toolchain needed); run
-  from a clone it builds from source instead. Drops the binary on
-  `$PATH` (`~/.local/bin` by default, override with `PREFIX`).
+  pre-built binary from GitHub Releases (no Go toolchain needed),
+  verifies its sha256 against the release `checksums.txt`, and installs
+  it atomically. Destination is `BIN_DIR` (default `/usr/local/bin` when
+  writable, else `~/.local/bin`); the legacy `PREFIX` spelling still
+  works and means `$PREFIX/bin`.
+
+  The script is **generated**, not hand-written: `install.sh.json` plus
+  the canonical template in
+  [`github.com/kfet/distkit/installsh`](https://github.com/kfet/distkit)
+  — one installer shared by the whole family, so a fix (curl-or-wget,
+  the three 32-bit ARM spellings, anonymous release resolution that
+  spends no API quota, `GITHUB_TOKEN` for private repos) lands
+  everywhere at once. `make install.sh` regenerates it and
+  `make check-installsh` — wired into `make all` and therefore CI —
+  fails the build when the checked-in copy has drifted, so staleness is
+  caught here and never on a user's machine.
 - **Go users:** `go install github.com/kfet/airan/cmd/airan@latest`.
 
 ## Repository model
