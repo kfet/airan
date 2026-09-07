@@ -4,7 +4,7 @@
 # install.sh is GENERATED from install.sh.json by the canonical distkit
 # template (github.com/kfet/distkit/installsh) — never hand-edited. Pinned by
 # version and run with `go run`, so airan's own module stays stdlib-only.
-INSTALLSH := go run github.com/kfet/distkit/cmd/distkit-installsh@v0.1.4
+INSTALLSH := go run github.com/kfet/distkit/cmd/distkit-installsh@v0.1.8
 
 BINDIR := bin
 

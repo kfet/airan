@@ -215,7 +215,8 @@ stays portable across every `env`.
   [`github.com/kfet/distkit/installsh`](https://github.com/kfet/distkit)
   — one installer shared by the whole family, so a fix (curl-or-wget,
   the three 32-bit ARM spellings, anonymous release resolution that
-  spends no API quota, `GITHUB_TOKEN` for private repos) lands
+  spends no API quota, `GITHUB_TOKEN` for private repos, a `VERSION` guard
+  against path traversal out of the repo's release URLs) lands
   everywhere at once. `make install.sh` regenerates it and
   `make check-installsh` — wired into `make all` and therefore CI —
   fails the build when the checked-in copy has drifted, so staleness is

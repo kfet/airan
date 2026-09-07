@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+
+- **Path traversal in `VERSION` (install.sh).** The release tag was pasted
+  into two URL paths — the API's `/releases/tags/<tag>` and the download
+  host's `/releases/download/<tag>/` — with no validation. A value such as
+  `VERSION=../../other/repo/releases/download/v1` walked out of this
+  repository and installed **another project's binary**; because
+  `checksums.txt` was fetched from that same traversed location it verified
+  against itself and reported "checksum ok". The generated installer now
+  rejects any `VERSION` that is empty, starts with `-`, or contains a
+  character outside `[A-Za-z0-9._+-]` — so no `/`, and no whitespace, can
+  reach a URL path — and it does so before any network access:
+
+      $ VERSION=../../other/repo/releases/download/v1 sh install.sh
+      error: bad VERSION '../../other/repo/releases/download/v1': want a release tag, e.g. v0.1.3
+
+  Fixed by regenerating `install.sh` from `github.com/kfet/distkit` v0.1.8
+  (was v0.1.4).
+
+### Changed
+
+- The latest-release redirect parser now captures everything after
+  `/releases/tag/` instead of the last path segment, so a tag containing a
+  slash stays whole and is caught by the guard above rather than being
+  silently truncated to a different, existing tag.
+- `install.sh` logs "resolving latest release" on the `GITHUB_TOKEN` path
+  too, not only the anonymous one.
+
 ## [0.1.4] - 2026-09-07
 
 ### Changed
