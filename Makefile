@@ -29,16 +29,18 @@ endif
 
 # Default target. gofmt + go vet + staticcheck + unit tests with the race
 # detector, shuffled order, fresh cache, and a 100% coverage gate, then the
-# binary build. This is also exactly what CI runs (minus build) — no separate
-# "fast" mode. To iterate faster locally, run `go test ./...` directly.
+# binary build, then the install.sh drift gate. CI runs this same target
+# verbatim — no separate "fast" mode. To iterate faster locally, run
+# `go test ./...` directly.
 all: run-tests build check-installsh
 	@echo "✓ all green"
 
 # Static gates (gofmt + go vet + staticcheck if installed).
 check: fmtcheck vet staticcheck
 
-# Regenerate the root install.sh from install.sh.json.
-install.sh: install.sh.json
+# Regenerate the root install.sh from install.sh.json. The Makefile is a
+# prerequisite too: bumping the pinned distkit version changes the output.
+install.sh: install.sh.json Makefile
 	$(call RUN,generate install.sh,$(INSTALLSH) -o $@)
 
 # Dev-only drift gate: fails the build when the checked-in install.sh no

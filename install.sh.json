@@ -1,8 +1,6 @@
 {
   "repo": "kfet/airan",
   "binary": "airan",
-  "asset_stem": "airan",
-  "asset_template": "{stem}-{os}-{arch}",
   "arm_suffix": "arm",
   "freebsd": true,
   "arch_386": true,
